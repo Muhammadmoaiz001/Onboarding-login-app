@@ -1,0 +1,28 @@
+{
+  "expo": {
+    "name": "Onboarding-login-app",
+    "slug": "Onboarding-login-app",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/logo.jpg",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/logo.jpg",
+      "resizeMode": "contain",
+      "backgroundColor": "#f4ebca"
+    },
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/logo.jpg",
+        "backgroundColor": "#f4ebca"
+      }
+    },
+    "web": {
+      "favicon": "./assets/logo.jpg"
+    }
+  }
+}
