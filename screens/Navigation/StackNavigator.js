@@ -3,10 +3,10 @@ import React, { useEffect, useState } from "react";
 import { createStackNavigator } from "@react-navigation/stack";
 import Onboarding from "../Onboarding";
 import Login from "../Login";
-import SignUp from "../SignUp";
-import Home from "../Home";
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import Forgotpass from "../Forgotpass";
+import Profile from "../../week2-screens/Profile";
+import SignUp from "../../week2-screens/SignUp";
 
 const StackNavigator = () => {
   const Stack = createStackNavigator();
@@ -16,7 +16,7 @@ const StackNavigator = () => {
     const checkIfAlreadyOnboarded = async () => {
       try {
         let onboarded = await AsyncStorage.getItem("onboarded");
-        if (onboarded === '1') {
+        if (onboarded === "1") {
           // hide onboarding
           setShowOnboarding(false);
         } else {
@@ -44,7 +44,7 @@ const StackNavigator = () => {
       <Stack.Screen name="Login" component={Login} />
       <Stack.Screen name="ForgotPass" component={Forgotpass} />
       <Stack.Screen name="SignUp" component={SignUp} />
-      <Stack.Screen name="Home" component={Home} />
+      <Stack.Screen name="Profile" component={Profile} />
     </Stack.Navigator>
   );
 };

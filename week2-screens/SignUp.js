@@ -8,15 +8,15 @@ import {
   Image,
   ScrollView,
 } from "react-native";
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { colors, parameters } from "../global/styles";
 import { useNavigation } from "@react-navigation/native";
-import { removeItem } from "../global/AysyncStorage";
 import Button from "../Components/Button";
 import Header from "../Components/Header";
 import { Dimensions } from "react-native";
 import { Formik } from "formik";
 import * as Yup from "yup";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Get screen dimensions
 const { width, height } = Dimensions.get("window");
@@ -24,27 +24,48 @@ const { width, height } = Dimensions.get("window");
 const SignUp = () => {
   const navigation = useNavigation();
   const [secureTextEntry, setSecureTextEntry] = useState(true);
+  const [secureTextEntryConfirm, setSecureTextEntryConfirm] = useState(true);
 
   // Toggle password visibility
   const toggleSecureEntry = () => {
     setSecureTextEntry(!secureTextEntry);
   };
 
+  // Toggle Confirm password visibility
+  const toggleSecureEntryConfirm = () => {
+    setSecureTextEntryConfirm(!secureTextEntryConfirm);
+  };
+
   // Validation schema for form inputs
   const validationSchema = Yup.object().shape({
-    username: Yup.string().required("Username is required"),
+    username: Yup.string()
+      .required("Username is required")
+      .min(6, "Username must be at least 6 characters"),
     email: Yup.string().email("Invalid email").required("Email is required"),
-    password: Yup.string().min(6, "Password must be at least 6 characters").required("Password is required"),
+    password: Yup.string()
+      .min(6, "Password must be at least 6 characters")
+      .required("Password is required"),
+    confirmPassword: Yup.string()
+      .oneOf([Yup.ref("password"), null], "Passwords must match")
+      .required("Password is required"),
   });
+
+  // Function to store user data in AsyncStorage
+  const storeUserData = async (values) => {
+    try {
+      await AsyncStorage.setItem('userData', JSON.stringify(values));
+      // Navigate to Profile on successful sign up
+      navigation.navigate("Profile");
+    } catch (error) {
+      console.error("Error storing user data", error);
+    }
+  };
 
   return (
     <Formik
-      initialValues={{ username: "", email: "", password: "" }}
+      initialValues={{ username: "", email: "", password: "", confirmPassword: "" }}
       validationSchema={validationSchema}
-      onSubmit={(values) => {
-        // Navigate to Home on successful sign up
-        navigation.navigate("Home");
-      }}
+      onSubmit={storeUserData} // Call storeUserData on form submission
     >
       {({
         handleChange,
@@ -66,6 +87,7 @@ const SignUp = () => {
               <View style={styles.TextInputView}>
                 {/* Username Input */}
                 <TextInput
+                  name="username"
                   placeholder="Enter Your Name"
                   placeholderTextColor={"black"}
                   style={styles.inputField}
@@ -78,6 +100,7 @@ const SignUp = () => {
                 )}
                 {/* Email Input */}
                 <TextInput
+                  name="email"
                   placeholder="Email"
                   placeholderTextColor={"#000"}
                   style={styles.inputField}
@@ -91,6 +114,7 @@ const SignUp = () => {
                 )}
                 {/* Password Input */}
                 <TextInput
+                  name="password"
                   placeholder="Password"
                   placeholderTextColor={"#000"}
                   style={styles.inputField}
@@ -102,17 +126,43 @@ const SignUp = () => {
                 {touched.password && errors.password && (
                   <Text style={styles.errorText}>{errors.password}</Text>
                 )}
+                <View style={styles.passwordTextView}>
+                  {/* Toggle password visibility */}
+                  <TouchableOpacity onPress={toggleSecureEntry}>
+                    <Text style={styles.passwordText}>
+                      {secureTextEntry ? "Show Password" : "Hide Password"}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+                {/* Confirm Password Input */}
+                <TextInput
+                  name="confirmPassword"
+                  placeholder="Confirm Password"
+                  placeholderTextColor={"#000"}
+                  style={styles.inputField}
+                  secureTextEntry={secureTextEntryConfirm}
+                  value={values.confirmPassword}
+                  onChangeText={handleChange("confirmPassword")}
+                  onBlur={handleBlur("confirmPassword")}
+                />
+                {touched.confirmPassword && errors.confirmPassword && (
+                  <Text style={styles.errorText}>{errors.confirmPassword}</Text>
+                )}
               </View>
               <View style={styles.passwordTextView}>
                 {/* Toggle password visibility */}
-                <TouchableOpacity onPress={toggleSecureEntry}>
+                <TouchableOpacity onPress={toggleSecureEntryConfirm}>
                   <Text style={styles.passwordText}>
-                    {secureTextEntry ? "Show Password" : "Hide Password"}
+                    {secureTextEntryConfirm ? "Show Password" : "Hide Password"}
                   </Text>
                 </TouchableOpacity>
               </View>
               {/* Sign Up Button */}
-              <Button title={"Sign Up"} onPress={handleSubmit} style={parameters.styledButton} />
+              <Button
+                title={"Sign Up"}
+                onPress={handleSubmit}
+                style={[parameters.styledButton, { marginTop: 25 }]}
+              />
               <View style={styles.OrContainer}>
                 <View style={styles.line}></View>
                 <Text style={styles.OR}>OR</Text>
@@ -205,11 +255,10 @@ const styles = StyleSheet.create({
     width: width * 0.9,
     justifyContent: "space-between",
     flexDirection: "row",
-    marginBottom: height * 0.05,
   },
   passwordText: {
-    fontWeight: "bold",
     color: "white",
+    fontSize:10
   },
   OrContainer: {
     height: height * 0.04,
@@ -279,7 +328,7 @@ const styles = StyleSheet.create({
     color: colors.black,
   },
   errorText: {
-    color: "red",
+    color: "white",
     fontSize: 12,
     marginLeft: 10,
   },

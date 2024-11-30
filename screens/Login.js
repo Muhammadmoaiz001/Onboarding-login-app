@@ -3,20 +3,19 @@ import {
   Text,
   TouchableOpacity,
   View,
-  StatusBar,
   TextInput,
   Image,
-  ScrollView
+  ScrollView,
+  Dimensions,
 } from "react-native";
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { colors, parameters } from "../global/styles";
 import { useNavigation } from "@react-navigation/native";
-import { removeItem } from "../global/AysyncStorage";
 import Button from "../Components/Button";
 import Header from "../Components/Header";
-import { Dimensions } from "react-native";
 import { Formik } from "formik";
 import * as Yup from "yup";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Get screen dimensions
 const { width, height } = Dimensions.get("window");
@@ -36,14 +35,31 @@ const Login = () => {
     password: Yup.string().min(6, "Password must be at least 6 characters").required("Password is required"),
   });
 
+  // Function to handle login
+  const handleLogin = async (values) => {
+    try {
+      const storedData = await AsyncStorage.getItem('userData');
+      if (storedData) {
+        const { email, password } = JSON.parse(storedData);
+        if (email === values.email && password === values.password) {
+          // Navigate to Profile on successful login
+          navigation.navigate("Profile");
+        } else {
+          alert("Invalid email or password");
+        }
+      } else {
+        alert("No user data found. Please sign up first.");
+      }
+    } catch (error) {
+      console.error("Error during login", error);
+    }
+  };
+
   return (
     <Formik
       initialValues={{ email: "", password: "" }}
       validationSchema={validationSchema}
-      onSubmit={(values) => {
-        // Navigate to Home on successful login
-        navigation.navigate("Home");
-      }}
+      onSubmit={handleLogin} // Call handleLogin on form submission
     >
       {({
         handleChange,
